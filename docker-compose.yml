@@ -35,8 +35,8 @@ services:
     environment:
       - PYTHONPATH=/app
     depends_on:
-      - db
-      - redis
+      - db-pro
+      - redis-pro
 
 
 volumes:
