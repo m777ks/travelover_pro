@@ -7,6 +7,7 @@ class TgBot:
     token: str
     admin_ids: list[int]
     admin: int
+    chat_id: int
 
 
 @dataclass
@@ -41,7 +42,8 @@ def load_config(path: str | None = None) -> ConfigEnv:
         tg_bot=TgBot(
             token=env('BOT_TOKEN'),
             admin_ids=list(map(int, env.list('ADMIN_IDS'))),
-            admin=env('ADMIN')
+            admin=env('ADMIN'),
+            chat_id=env('CHAT_ID')
         ),
         postgres=Postgres(
             host=env('POSTGRES_HOST'),

@@ -29,6 +29,7 @@ cd <имя-папки>
 ```
 BOT_TOKEN=ваш_токен_бота
 ADMIN=ваш_telegram_id
+CHAT_ID=-100
 
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432

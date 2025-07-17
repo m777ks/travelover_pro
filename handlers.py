@@ -35,7 +35,7 @@ class FSMFillForm(StatesGroup):
     terms_deal = State()
     amount_deal = State()
     account_name = State()
-CHAT_ID = -4284595055
+CHAT_ID = config.tg_bot.chat_id
 ADMIN_CONTACT = '@adamlewson'
 
 @router.message(CommandStart(), (lambda message: message.chat.type == 'private'))
