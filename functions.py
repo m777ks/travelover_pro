@@ -1,7 +1,11 @@
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from sqlalchemy import select
+
 from config_data.config import ConfigEnv, load_config
+from database.database import session_factory
 from database.databaseORM import DataBase
+from database.models import AccountCategoryORM
 from main import redis
 
 config: ConfigEnv = load_config()
@@ -52,10 +56,10 @@ async def profile_user(user_id: int, username: str, bot: Bot):
 async def sender_admin(bot: Bot, text: str, amount: str, username: str, fullname: str, user_id: int):
     text_msg = (
         f'📛 <b>{text}</b>\n'
-        f'👤User fullname: <b>{fullname}</b>\n'
-        f'✅Username: <b>@{username}</b>\n'
-        f'👁️ID: <b>{user_id}</b>\n'
-        f'💰Playment: <b>{amount}</b> USDT\n'
+        f'👤 User fullname: <b>{fullname}</b>\n'
+        f'✅ Username: <b>@{username}</b>\n'
+        f'👁️ ID: <b>{user_id}</b>\n'
+        f'💰 Payment: <b>{amount}</b> USDT\n'
     )
     confirm = InlineKeyboardButton(
         text='Confirm',
@@ -68,10 +72,10 @@ async def sender_admin(bot: Bot, text: str, amount: str, username: str, fullname
 async def sender_admin_account(bot: Bot, text: str, amount: str, username: str, fullname: str, user_id: int):
     text_msg = (
         f'📛 <b>{text}</b>\n'
-        f'👤User fullname: <b>{fullname}</b>\n'
-        f'✅Username: <b>@{username}</b>\n'
-        f'👁️ID: <b>{user_id}</b>\n'
-        f'💰Playment: <b>{amount}</b> USDT\n'
+        f'👤 User fullname: <b>{fullname}</b>\n'
+        f'✅ Username: <b>@{username}</b>\n'
+        f'👁️ ID: <b>{user_id}</b>\n'
+        f'💰 Payment: <b>{amount}</b> USDT\n'
     )
     confirm = InlineKeyboardButton(
         text='Confirm',
@@ -98,33 +102,16 @@ async def escrow_window(bot: Bot, user_id: int):
 
 
 async def send_accounts(bot: Bot, user_id: int):
-    text = 'Select a category:'
-    buttons_lis = [
-        'Latam air',
-        'Azul air',
-        'Delta',
-        'IHG',
-        'Virgin Atlantic',
-        'Southwest',
-        'Emirates',
-        'BA',
-        'AA',
-        'Choice priviledge hotels',
-        'Singapore air',
-        'Virgin Velocity',
-        'Hawaiian airlines',
-        'United airlines',
-        'Tap Air Portugal',
-        'Iberia',
-        'Turkish Airlines',
-        'Hilton',
-    ]
-    buttons = []
-    for button_name in buttons_lis:
-        button_text = button_name
-        callback_data = f'acc_{button_name}'
-        button = InlineKeyboardButton(text=button_text, callback_data=callback_data)
-        buttons.append([button])
-    buttons.append([InlineKeyboardButton(text='Back', callback_data='close')])
-    kb = InlineKeyboardMarkup(inline_keyboard=buttons)
-    await bot.send_message(chat_id=user_id, text=text, reply_markup=kb, parse_mode='html')
+    text = "Select a category:"
+
+    async with session_factory() as session:
+        categories = await session.scalars(select(AccountCategoryORM))
+
+        buttons = [
+            [InlineKeyboardButton(text=cat.name, callback_data=f"acc_{cat.name}")]
+            for cat in categories
+        ]
+        buttons.append([InlineKeyboardButton(text="Back", callback_data="close")])
+
+        kb = InlineKeyboardMarkup(inline_keyboard=buttons)
+        await bot.send_message(chat_id=user_id, text=text, reply_markup=kb, parse_mode="HTML")

@@ -85,3 +85,23 @@ class DealRatingORM(Base):
 
     # Отношения
     user: Mapped['UsersORM'] = relationship('UsersORM', back_populates='ratings')
+
+class AccountCategoryORM(Base):
+    __tablename__ = "account_categories"
+
+    id: Mapped[intpk]
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+    products: Mapped[list["AccountProductORM"]] = relationship(
+        back_populates="category", cascade="all, delete-orphan"
+    )
+
+
+class AccountProductORM(Base):
+    __tablename__ = "account_products"
+
+    id: Mapped[intpk]
+    category_id: Mapped[int] = mapped_column(ForeignKey("account_categories.id"))
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    category: Mapped["AccountCategoryORM"] = relationship(back_populates="products")

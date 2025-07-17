@@ -9,10 +9,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 from aiogram.fsm.state import StatesGroup, State, default_state
+from sqlalchemy import select
 
 from config_data.config import ConfigEnv, load_config
+from database.database import session_factory
 from database.databaseORM import DataBase
-from database.models import DealStatus
+from database.models import DealStatus, AccountCategoryORM, AccountProductORM
 from functions import profile_user, sender_admin, escrow_window, check_throttle, send_accounts, sender_admin_account
 from keybords.keybords import create_deals_keyboard, create_deals_all_keyboard
 
@@ -33,7 +35,8 @@ class FSMFillForm(StatesGroup):
     terms_deal = State()
     amount_deal = State()
     account_name = State()
-CHAT_ID = -1002300500323
+CHAT_ID = -4284595055
+ADMIN_CONTACT = '@adamlewson'
 
 @router.message(CommandStart(), (lambda message: message.chat.type == 'private'))
 async def process_start(message: Message, state: FSMContext, bot: Bot):
@@ -47,7 +50,7 @@ async def process_start(message: Message, state: FSMContext, bot: Bot):
     user_name = message.from_user.username or "NO_username"
     logger.info(f'USER: {message.from_user.id}, USER_NAME: {user_name}, STATUS: {user_status}')
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer('you must be subscribed to discountravel chat to access bot, contact admin @Yacobovitz')
+        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
         return
 
     name = message.from_user.full_name or "NO_name"
@@ -74,7 +77,7 @@ async def process_profile_msg(message: Message, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer('you must be subscribed to discountravel chat to access bot, contact admin @Yacobovitz')
+        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
@@ -91,7 +94,7 @@ async def process_profile(callback: CallbackQuery, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await callback.message.answer('you must be subscribed to discountravel chat to access bot, contact admin @Yacobovitz')
+        await callback.message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await callback.message.delete()
@@ -180,11 +183,11 @@ async def process_withdraw_complied(message: Message, state: FSMContext, bot: Bo
 
     amount = user_dict.get('amount')
     address = user_dict.get('address')
-    reduced_amount = float(amount) * 0.92
+    reduced_amount = float(amount) * 0.95
 
     text = (f'Withdrawal✅ \n\n'
             f'<b>Amount to withdraw:</b> {amount} USDT\n\n'
-            f'<b>Commission:</b> 8%\n'
+            f'<b>Commission:</b> 5%\n'
             f'<b>Amount to be received:</b> {reduced_amount:.2f} USDT\n\n'
             f'<b>USDT TRC20 address:</b> {address}'
             )
@@ -211,7 +214,7 @@ async def withdraw_confirm(callback: CallbackQuery, state: FSMContext, bot: Bot)
 
     amount = user_dict.get('amount')
     address = user_dict.get('address')
-    reduced_amount = float(amount) * 0.92
+    reduced_amount = float(amount) * 0.95
 
     text = (
         f'👤 <b>WITHDRAW</b>\n'
@@ -263,13 +266,13 @@ async def process_deposit_address(message: Message, state: FSMContext):
     messages = (
         "<b>💰 Replenishment Addresses</b>\n\n"
         "<b>USDT (TRC20)</b>\n"
-        "<code>TMPZ28h4GWpAnxJiE3Vq5G8dbRPncxJ9mU</code>\n\n"
+        "<code>TTALT8ub93u1cP3PJ9d3zsnix5kQ1WTVmE</code>\n\n"
         "<b>LTC (Litecoin)</b>\n"
-        "<code>LMvZ7JBsD7pGruHp2yd8h6s7sEU9QFg4Wa</code>\n\n"
+        "<code>LQm27px8YaMew7xGuXr53BDrNUCGLSETBT</code>\n\n"
         "<b>BTC (Bitcoin)</b>\n"
-        "<code>1GvCKpKrgvSgBMQKanSewXxkBtUJsWmTvm</code>\n\n"
-        "<b>TON</b>\n"
-        "<code>UQCKk4uGB7d2gF9n4bgFsyrLEacbdTN7rbSbI7mAZ9yJqtjh</code>\n\n"
+        "<code>3LgvBhbn95KEbhpF11TSbEtE7o7fiwjMdd</code>\n\n"
+        "<b>USDT ERC20</b>\n"
+        "<code>0x69ff2198c5a01b031fa2efde9752c0ae0dee0fe4</code>\n\n"
         "After making the deposit, click the <b>“Completed”</b> button.\n"
         "To go back, press the <b>“Back”</b> button in your profile."
     )
@@ -332,7 +335,7 @@ async def process_escrow_msg(message: Message, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer('you must be subscribed to discountravel chat to access bot, contact admin @Yacobovitz')
+        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
@@ -610,7 +613,7 @@ async def handle_user_search(message: Message, state: FSMContext):
 
     else:
         # Если формат не распознан
-        await message.answer("🙏 Please enter a valid username (starting with @) or user ID.")
+        await message.answer("Please enter a valid username (starting with @) or user ID.")
         return
 
 
@@ -840,7 +843,7 @@ async def release_funds(callback: CallbackQuery, bot: Bot):
 
     await callback.message.delete()
 
-    text_msg = f"👏 Congratulations on a successful transaction ✅"
+    text_msg = f"Your transaction completed ✅"
     await callback.message.answer(text_msg, parse_mode='html')
 
     deal = await DataBase.get_deal_by_id(deal_id)
@@ -925,7 +928,7 @@ async def process_choose_accounts(message: Message, bot: Bot, state: FSMContext)
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer('you must be subscribed to discountravel chat to access bot, contact admin @Yacobovitz')
+        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
@@ -947,160 +950,99 @@ async def process_accounts(callback: CallbackQuery, bot: Bot, state: FSMContext)
 @router.callback_query(lambda c: c.data.startswith('acc_'))
 async def process_account_buttons(callback: CallbackQuery, state: FSMContext):
     if await check_throttle(callback.from_user.id, callback.data):
-        return  # Если пользователь в режиме троттлинга, завершить обработку
-    await callback.message.delete()
-    # Определяем данные для каждой категории
-    accounts_data = {
-        "Latam air": [
-            "200k with cash | 150$",
-            "30k with email | 20$",
-            "10k with email | 10$"
-        ],
-        "Azul air": [
-            "20k with email | 20$"
-        ],
-        "Delta": [
-            "14k | 20$",
-            "10k with email | 15$",
-            "45k changed email | 25$",
-            "40k with email | 25$"
-        ],
-        "IHG": [
-            "15k | 20$",
-            "13k with email | 15$"
-        ],
-        "Virgin Atlantic": [
-            "38k with email | 40$"
-        ],
-        "Southwest": [
-            "8k with credits 300$ without email | 150$"
-        ],
-        "Emirates": [
-            "10k | 15$",
-            "8k family with email | 10$"
-        ],
-        "BA": [
-            # "with email 17k | 15$",
-            # "26k plus voucher flight for 1 person with email | 40$"
-        ],
-        "AA": [
-            # "15k with email | 15$"
-        ],
-        "Choice priviledge hotels": [
-            "14k with email | 15$",
-            "10k with email | 10$"
-        ],
-        "Singapore air": [
-            "13k with email | 15$",
-            "19k with email | 25$"
-        ],
-        "Virgin Velocity": [
-            # "6k with email | 10$",
-            # "7k with email | 10$",
-            # "11k with email | 15$"
-        ],
-        "Hawaiian airlines": [
-            "64k with email | 40$",
-            "10k with email | 10$"
-        ],
-        "Tap Air Portugal": [
-            # "62k | 45$"
-        ],
-        "Iberia": [
-            "25k with email 40$",
-        ],
-        "Turkish Airlines": [
-            "28k with email 30$"
-        ],
-        "Hilton": [
-            "Hilton 11k with email 10$",
-            "Hilton 23k with email 10$"
-        ]
-    }
-
-    # Получаем название выбранной категории
-    selected_account = callback.data.split('_')[1]
-
-    # Проверяем, есть ли данные для выбранной категории
-    if selected_account in accounts_data:
-        response_text = selected_account
-        # Генерация кнопок
-        buttons = [
-            [InlineKeyboardButton(text=name, callback_data=f'prod_{name}')]
-            for name in accounts_data[selected_account]
-        ]
-        # Добавляем кнопку "Back"
-        buttons.append([InlineKeyboardButton(text='Back', callback_data='accounts')])
-    else:
-        await callback.message.answer("Invalid account selected.")
         return
 
-    # Создаем разметку клавиатуры
-    kb = InlineKeyboardMarkup(inline_keyboard=buttons)
+    await callback.message.delete()
 
-    # Отправляем текст и клавиатуру
-    await callback.message.answer(text=response_text, reply_markup=kb, parse_mode='html')
+    selected_category = callback.data.split('_', 1)[1]
 
-    # Подтверждаем callback
-    await callback.answer()
+    async with session_factory() as session:
+        category = await session.scalar(
+            select(AccountCategoryORM).where(AccountCategoryORM.name == selected_category)
+        )
+
+        if not category:
+            await callback.message.answer("Нет такой категории.")
+            return
+
+        products = await session.scalars(
+            select(AccountProductORM).where(AccountProductORM.category_id == category.id)
+        )
+
+        buttons = [
+            [InlineKeyboardButton(text=p.name, callback_data=f"prod_{p.id}")]
+            for p in products
+        ]
+        buttons.append([InlineKeyboardButton(text="Back", callback_data="accounts")])
+        kb = InlineKeyboardMarkup(inline_keyboard=buttons)
+
+        await callback.message.answer(text=selected_category, reply_markup=kb, parse_mode="HTML")
+        await callback.answer()
+
 
 
 @router.callback_query(lambda c: c.data.startswith('prod_'))
 async def process_product_selection(callback: CallbackQuery, bot: Bot):
     if await check_throttle(callback.from_user.id, callback.data):
-        return  # Если пользователь в режиме троттлинга, завершить обработку
-
-    # Регулярное выражение для поиска цены в формате "число$"
-    match = re.search(r'\| (\d+)\$', callback.data)
-
-    price = int(match.group(1))  # Получаем совпадение
+        return
 
     await callback.message.delete()
-    product_text = callback.message.text
-    selected_product = callback.data.split('_')[1]
-    user_id = callback.from_user.id
 
-    # Уведомляем пользователя
-    await callback.message.answer(
-        "Thanks for choosing! The administrator will contact you shortly. ✅"
-    )
-    await asyncio.sleep(1)
-    messages = (f'<code>TMPZ28h4GWpAnxJiE3Vq5G8dbRPncxJ9mU</code>\nTRC20 network\n\n'
-                f'{selected_product}\n\n'
-                f'After replenishment, click on the "Completed" button\n'
-                f'To return to the "Back" accounts')
+    try:
+        product_id = int(callback.data.split('_', 1)[1])
+    except (IndexError, ValueError):
+        await callback.answer("❌ Неверный формат данных", show_alert=True)
+        return
 
-    completed = InlineKeyboardButton(
-        text='Completed',
-        callback_data=f'bayacc_completed_{price}'
-    )
-    back_profile = InlineKeyboardButton(
-        text='Back',
-        callback_data='accounts'
-    )
-    kb = InlineKeyboardMarkup(inline_keyboard=[[back_profile, completed]])
+    async with session_factory() as session:
+        product = await session.get(AccountProductORM, product_id)
+        if not product:
+            await callback.answer("❌ Продукт не найден", show_alert=True)
+            return
 
-    await callback.message.answer(text=messages, reply_markup=kb, parse_mode='html')
 
-    write = InlineKeyboardButton(text='Profile', url=f"tg://user?id={user_id}")
-    markup = InlineKeyboardMarkup(inline_keyboard=[[write]])
-    # Уведомляем админа
-    admin_id = config.tg_bot.admin
-    user_info = f"👁️ ID: {callback.from_user.id},\n✅ Username: @{callback.from_user.username or 'No username'}"
-    await bot.send_message(
-        chat_id=admin_id,
-        text=f"👤 User\n{user_info}\n\nSelected:\n{product_text}\n{selected_product}",
-        reply_markup=markup
-    )
 
-    await bot.send_message(
-        chat_id=717150843,
-        text=f"👤 User\n{user_info}\n\nSelected:\n{product_text}\n{selected_product}",
-        reply_markup=markup
-    )
+        user_id = callback.from_user.id
+        product_text = product.name
+        match = re.search(r'\| (\d+)\$', product_text)
+        price = int(match.group(1))
 
-    # Подтверждаем callback
-    await callback.answer("✅ Your choice is registered!")
+        await callback.message.answer(
+            "Thanks for choosing! The administrator will contact you shortly. ✅"
+        )
+        await asyncio.sleep(1)
+
+        message = (
+            f'<code>TTALT8ub93u1cP3PJ9d3zsnix5kQ1WTVmE</code>\nTRC20 network\n\n'
+            f'{product_text}\n\n'
+            f'After replenishment, click on the "Completed" button\n'
+            f'To return to the "Back" accounts'
+        )
+
+        completed = InlineKeyboardButton(
+            text='Completed',
+            callback_data=f'bayacc_completed_{price}'
+        )
+        back_profile = InlineKeyboardButton(
+            text='Back',
+            callback_data='accounts'
+        )
+        kb = InlineKeyboardMarkup(inline_keyboard=[[back_profile, completed]])
+
+        await callback.message.answer(text=message, reply_markup=kb, parse_mode='html')
+
+        # Уведомление админу
+        write = InlineKeyboardButton(text='Profile', url=f"tg://user?id={user_id}")
+        markup = InlineKeyboardMarkup(inline_keyboard=[[write]])
+        admin_id = config.tg_bot.admin
+        user_info = f"👁️ ID: {user_id},\n✅ Username: @{callback.from_user.username or 'No username'}"
+        await bot.send_message(
+            chat_id=admin_id,
+            text=f"👤 User\n{user_info}\n\nSelected:\n{product_text}",
+            reply_markup=markup
+        )
+        await callback.answer("✅ Your choice is registered!")
+
 
 @router.callback_query(lambda c: c.data.startswith('bayacc_'))
 async def process_bay_acc(callback: CallbackQuery, bot: Bot):
