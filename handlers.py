@@ -50,7 +50,7 @@ async def process_start(message: Message, state: FSMContext, bot: Bot):
     user_name = message.from_user.username or "NO_username"
     logger.info(f'USER: {message.from_user.id}, USER_NAME: {user_name}, STATUS: {user_status}')
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
+        await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
 
     name = message.from_user.full_name or "NO_name"
@@ -77,7 +77,7 @@ async def process_profile_msg(message: Message, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
+        await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
@@ -94,7 +94,7 @@ async def process_profile(callback: CallbackQuery, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await callback.message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
+        await callback.message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await callback.message.delete()
@@ -335,7 +335,7 @@ async def process_escrow_msg(message: Message, state: FSMContext, bot: Bot):
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
+        await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
@@ -928,7 +928,7 @@ async def process_choose_accounts(message: Message, bot: Bot, state: FSMContext)
     # Достаем статус пользователя
     user_status = chat_member.status.split('.')[-1]
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
-        await message.answer(f'You must be subscribed to discountravel chat to access bot, contact admin {ADMIN_CONTACT}')
+        await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
     await state.clear()
     await message.delete()
