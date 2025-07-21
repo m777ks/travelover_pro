@@ -52,6 +52,8 @@ async def process_start(message: Message, state: FSMContext, bot: Bot):
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
         await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
+    if message.get_args() == "rules":
+        await send_rules(message)
 
     name = message.from_user.full_name or "NO_name"
     await DataBase.insert_user(user_id=message.from_user.id, user_name=user_name, name=name)
@@ -67,6 +69,23 @@ async def process_start(message: Message, state: FSMContext, bot: Bot):
     kb = InlineKeyboardMarkup(inline_keyboard=[[escrow, profile]])
     await message.answer(text='MENU', reply_markup=kb)
 
+@router.message(Command(commands='rules'), (lambda message: message.chat.type == 'private'))
+async def send_rules(message: Message):
+    rules = """
+<b>📜 Miles Expert Bot Rules:</b>
+
+<b>1.1</b> These rules apply to <b>@Milesexpert_bot</b> only  
+<b>1.2</b> Rules ensure fair, transparent, and representative trading  
+<b>1.3</b> All deals must mention escrow: <b>@milesexpert_bot</b>  
+<b>1.4</b> To trade, register via Profile in @milesexpert_bot. 5% fee applies (USDT TRC/ ERC, LTC, BTC).  
+<b>1.5</b> Rejection or abuse of escrow → <b>instant ban</b>  
+<b>1.6</b> Slander, bias, harassment → <b>instant ban</b>  
+<b>1.7</b> Forbidden: CP, drugs, trafficking, stolen data, violence → <b>instant ban</b>  
+<b>1.8</b> Multiple accounts → <b>instant ban</b>  
+<b>1.9</b> For arbitration: login video proof must be provided  
+<b>1.10</b> Other questions → <b>@adamlewson</b>  
+"""
+    await message.answer(rules, parse_mode='HTML')
 
 @router.message(Command(commands='profile'), (lambda message: message.chat.type == 'private'))
 async def process_profile_msg(message: Message, state: FSMContext, bot: Bot):

@@ -4,7 +4,8 @@ from aiogram.types import BotCommand, BotCommandScopeAllPrivateChats, BotCommand
 LEXICON_COMMANDS: dict[str, str] = {
     '/profile': 'Profile',
     '/escrow': 'Escrow',
-    '/accounts': 'Choose accounts'
+    '/accounts': 'Choose accounts',
+    '/rules': 'Rules'
 }
 
 
