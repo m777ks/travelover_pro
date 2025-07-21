@@ -38,6 +38,14 @@ class FSMFillForm(StatesGroup):
 CHAT_ID = config.tg_bot.chat_id
 ADMIN_CONTACT = '@adamlewson'
 
+@router.message(F.text.startswith('/start rules'))
+async def rules(message: Message):
+    if await check_throttle(message.from_user.id, message.text):
+        return
+
+
+    await send_rules(message)
+
 @router.message(CommandStart(), (lambda message: message.chat.type == 'private'))
 async def process_start(message: Message, state: FSMContext, bot: Bot):
     if await check_throttle(message.from_user.id, message.text):
@@ -52,8 +60,7 @@ async def process_start(message: Message, state: FSMContext, bot: Bot):
     if user_status not in ['member', 'administrator', 'creator', 'restricted']:
         await message.answer(f'You must be subscribed to milesexpert chat to access bot, contact admin {ADMIN_CONTACT}')
         return
-    if message.get_args() == "rules":
-        await send_rules(message)
+
 
     name = message.from_user.full_name or "NO_name"
     await DataBase.insert_user(user_id=message.from_user.id, user_name=user_name, name=name)
