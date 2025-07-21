@@ -38,6 +38,24 @@ class FSMFillForm(StatesGroup):
 CHAT_ID = config.tg_bot.chat_id
 ADMIN_CONTACT = '@adamlewson'
 
+RULES_TEXT = """Hereby, certify the Miles Expert bot rules:
+1.1. The following rules perform exclusively for @Milesexpert_bot only  
+1.2. Rules are condemned to make the trades at Milesexpert bot fair, transparent and representative  
+1.3. All deals and adds at the bot chat are specified or marked with mentions of escrow @milesexpert_bot  
+1.4. To be presented in the community its necessary to register at @milesexpert_bot, by clicking profile button in bot. All trades and deals are permitted via @milesexpert_bot. Bot comission is 5% (usdt trc, usdt erc, ltc, btc). Withdrawals in usdt trc. No other bot can be used  
+1.5. The rejection of escrow is an instant ban from chat. This includes any kind of proven misunderstaning on how to use it, which practically is easy  
+1.6. Any proved facts of any biase, slander, persecution, abusive attitude against group members is instant ban  
+1.7. Child pornography, drugs, human trafficing, stolen personal data, shocking violent material is instant ban  
+1.8. Using more than 1 account at our chat is instant ban  
+1.9. In case of arbitrage of the deal at @milesexpert_bot, video of logging into account must be provided from both sides. Any other proof will be considered on a personal basis by admin @adamlewson  
+1.10. Regarding all other concerns, contact chat admin @adamlewson"""
+
+@router.message(F.text.startswith('/start rules-full'))
+async def rules(message: Message):
+    if await check_throttle(message.from_user.id, message.text):
+        return
+    await message.answer(RULES_TEXT)
+
 @router.message(F.text.startswith('/start rules'))
 async def rules(message: Message):
     if await check_throttle(message.from_user.id, message.text):
