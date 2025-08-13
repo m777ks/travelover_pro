@@ -314,9 +314,9 @@ async def process_deposit_address(message: Message, state: FSMContext):
         "<b>LTC (Litecoin)</b>\n"
         "<code>LQm27px8YaMew7xGuXr53BDrNUCGLSETBT</code>\n\n"
         "<b>BTC (Bitcoin)</b>\n"
-        "<code>3LgvBhbn95KEbhpF11TSbEtE7o7fiwjMdd</code>\n\n"
+        "<code>1PAG5W31hnSLjm5vNQgaDBgCFVxKCb3QDM</code>\n\n"
         "<b>USDT ERC20</b>\n"
-        "<code>0x69ff2198c5a01b031fa2efde9752c0ae0dee0fe4</code>\n\n"
+        "<code>0x823f04739253a2c7de4ae354c58acad15419120a</code>\n\n"
         "After making the deposit, click the <b>“Completed”</b> button.\n"
         "To go back, press the <b>“Back”</b> button in your profile."
     )
