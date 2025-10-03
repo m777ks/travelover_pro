@@ -36,7 +36,7 @@ class FSMFillForm(StatesGroup):
     amount_deal = State()
     account_name = State()
 CHAT_ID = config.tg_bot.chat_id
-ADMIN_CONTACT = '@adamlewson'
+ADMIN_CONTACT = '@adamlewsonpro'
 
 RULES_TEXT = """Hereby, certify the Miles Expert bot rules:
 1.1. The following rules perform exclusively for @Milesexpert_bot only  
@@ -47,8 +47,8 @@ RULES_TEXT = """Hereby, certify the Miles Expert bot rules:
 1.6. Any proved facts of any biase, slander, persecution, abusive attitude against group members is instant ban  
 1.7. Child pornography, drugs, human trafficing, stolen personal data, shocking violent material is instant ban  
 1.8. Using more than 1 account at our chat is instant ban  
-1.9. In case of arbitrage of the deal at @milesexpert_bot, video of logging into account must be provided from both sides. Any other proof will be considered on a personal basis by admin @adamlewson  
-1.10. Regarding all other concerns, contact chat admin @adamlewson"""
+1.9. In case of arbitrage of the deal at @milesexpert_bot, video of logging into account must be provided from both sides. Any other proof will be considered on a personal basis by admin @adamlewsonpro  
+1.10. Regarding all other concerns, contact chat admin @adamlewsonpro"""
 
 @router.message(F.text.startswith('/start rules-full'))
 async def rules(message: Message):
@@ -108,7 +108,7 @@ async def send_rules(message: Message):
 <b>1.7</b> Forbidden: CP, drugs, trafficking, stolen data, violence → <b>instant ban</b>  
 <b>1.8</b> Multiple accounts → <b>instant ban</b>  
 <b>1.9</b> For arbitration: login video proof must be provided  
-<b>1.10</b> Other questions → <b>@adamlewson</b>  
+<b>1.10</b> Other questions → <b>@adamlewsonpro</b>  
 """
     await message.answer(rules, parse_mode='HTML')
 
